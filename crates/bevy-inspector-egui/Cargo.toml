@@ -20,7 +20,7 @@ default = ["bevy_pbr"]
 highlight_changes = []
 
 [dependencies]
-bevy-inspector-egui-derive = { version = "0.20.0", path = "../bevy-inspector-egui-derive" }
+bevy-inspector-egui-derive = { path = "../bevy-inspector-egui-derive" }
 bevy_app = { path = "../../../bevy/crates/bevy_app" }
 bevy_asset = { path = "../../../bevy/crates/bevy_asset" }
 bevy_core = { path = "../../../bevy/crates/bevy_core" }
@@ -29,6 +29,7 @@ bevy_hierarchy = { path = "../../../bevy/crates/bevy_hierarchy" }
 bevy_log = { path = "../../../bevy/crates/bevy_log" }
 bevy_math = { path = "../../../bevy/crates/bevy_math" }
 bevy_reflect = { path = "../../../bevy/crates/bevy_reflect" }
+bevy_time = { path = "../../../bevy/crates/bevy_time" }
 bevy_utils = { path = "../../../bevy/crates/bevy_utils" }
 bevy_window = { path = "../../../bevy/crates/bevy_window" }
 
