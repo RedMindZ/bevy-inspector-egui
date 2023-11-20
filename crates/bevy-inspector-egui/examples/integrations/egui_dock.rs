@@ -1,7 +1,7 @@
 use std::any::TypeId;
 
 use bevy::prelude::*;
-use bevy_asset::{HandleId, ReflectAsset};
+use bevy_asset::{ReflectAsset, UntypedAssetId};
 use bevy_egui::EguiContext;
 use bevy_inspector_egui::bevy_inspector::hierarchy::{hierarchy_ui, SelectedEntities};
 use bevy_inspector_egui::bevy_inspector::{
@@ -134,7 +134,7 @@ fn set_gizmo_mode(input: Res<Input<KeyCode>>, mut ui_state: ResMut<UiState>) {
 enum InspectorSelection {
     Entities,
     Resource(TypeId, String),
-    Asset(TypeId, String, HandleId),
+    Asset(TypeId, String, UntypedAssetId),
 }
 
 #[derive(Resource)]
@@ -305,7 +305,7 @@ fn select_resource(
     let mut resources: Vec<_> = type_registry
         .iter()
         .filter(|registration| registration.data::<ReflectResource>().is_some())
-        .map(|registration| (registration.short_name().to_owned(), registration.type_id()))
+        .map(|registration| (registration.type_info().type_path().to_owned(), registration.type_id()))
         .collect();
     resources.sort_by(|(name_a, _), (name_b, _)| name_a.cmp(name_b));
 
@@ -332,7 +332,7 @@ fn select_asset(
         .filter_map(|registration| {
             let reflect_asset = registration.data::<ReflectAsset>()?;
             Some((
-                registration.short_name().to_owned(),
+                registration.type_info().type_path().to_owned(),
                 registration.type_id(),
                 reflect_asset,
             ))
@@ -342,7 +342,24 @@ fn select_asset(
 
     for (asset_name, asset_type_id, reflect_asset) in assets {
         let mut handles: Vec<_> = reflect_asset.ids(world).collect();
-        handles.sort();
+        handles.sort_by(|a, b| match (a, b) {
+            (
+                UntypedAssetId::Index { index: a_index, .. },
+                UntypedAssetId::Index { index: b_index, .. },
+            ) => a_index.cmp(b_index),
+            (
+                UntypedAssetId::Index { type_id: a_id, .. },
+                UntypedAssetId::Uuid { type_id: b_id, .. },
+            ) => a_id.cmp(b_id),
+            (
+                UntypedAssetId::Uuid { type_id: a_id, .. },
+                UntypedAssetId::Index { type_id: b_id, .. },
+            ) => a_id.cmp(b_id),
+            (
+                UntypedAssetId::Uuid { uuid: a_uuid, .. },
+                UntypedAssetId::Uuid { uuid: b_uuid, .. },
+            ) => a_uuid.cmp(b_uuid),
+        });
 
         ui.collapsing(format!("{asset_name} ({})", handles.len()), |ui| {
             for handle in handles {
