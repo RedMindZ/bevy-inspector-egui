@@ -1,6 +1,9 @@
 use std::collections::HashSet;
 
-use bevy_ecs::{prelude::*, query::ReadOnlyWorldQuery};
+use bevy_ecs::{
+    prelude::*,
+    query::{QueryFilter},
+};
 use bevy_hierarchy::{Children, Parent};
 use bevy_reflect::TypeRegistry;
 use egui::{CollapsingHeader, RichText};
@@ -36,7 +39,7 @@ pub struct Hierarchy<'a, T = ()> {
 }
 
 impl<T> Hierarchy<'_, T> {
-    pub fn show<F: ReadOnlyWorldQuery>(&mut self, ui: &mut egui::Ui) -> bool {
+    pub fn show<F: QueryFilter>(&mut self, ui: &mut egui::Ui) -> bool {
         let mut root_query = self.world.query_filtered::<Entity, (Without<Parent>, F)>();
 
         let always_open: HashSet<Entity> = self
@@ -104,15 +107,13 @@ impl<T> Hierarchy<'_, T> {
                 }
                 paint_default_icon(ui, openness, response);
             })
-            .selectable(true)
-            .selected(selected)
             .open(open)
             .show(ui, |ui| {
                 let children = self.world.get::<Children>(entity);
                 if let Some(children) = children {
                     let children = children.to_vec();
                     for &child in children.iter() {
-                        self.entity_ui(ui, child, always_open, &children);
+                        new_selection |= self.entity_ui(ui, child, always_open, &children);
                     }
                 } else {
                     ui.label("No children");

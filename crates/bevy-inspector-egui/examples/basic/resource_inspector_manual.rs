@@ -30,7 +30,7 @@ fn main() {
 
 fn inspector_ui(world: &mut World, mut disabled: Local<bool>) {
     let space_pressed = world
-        .resource::<Input<KeyCode>>()
+        .resource::<ButtonInput<KeyCode>>()
         .just_pressed(KeyCode::Space);
     if space_pressed {
         *disabled = !*disabled;
@@ -46,7 +46,7 @@ fn inspector_ui(world: &mut World, mut disabled: Local<bool>) {
 
     // the usual `ResourceInspector` code
     egui::Window::new("Resource Inspector").show(egui_context.get_mut(), |ui| {
-        egui::ScrollArea::vertical().show(ui, |ui| {
+        egui::ScrollArea::both().show(ui, |ui| {
             bevy_inspector_egui::bevy_inspector::ui_for_resource::<Configuration>(world, ui);
 
             ui.separator();
@@ -63,21 +63,21 @@ fn setup(
 ) {
     // plane
     commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane::from_size(5.0))),
-        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+        mesh: meshes.add(Plane3d::default().mesh().size(5.0, 5.0)),
+        material: materials.add(Color::rgb(0.3, 0.5, 0.3)),
         ..default()
     });
     // cube
     commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+        mesh: meshes.add(Cuboid::new(1.0, 1.0, 1.0)),
+        material: materials.add(Color::rgb(0.8, 0.7, 0.6)),
         transform: Transform::from_xyz(0.0, 0.5, 0.0),
         ..default()
     });
     // light
     commands.spawn(PointLightBundle {
         point_light: PointLight {
-            intensity: 1500.0,
+            intensity: 2_000_000.0,
             shadows_enabled: true,
             ..default()
         },
